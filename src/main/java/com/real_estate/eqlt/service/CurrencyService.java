@@ -20,17 +20,17 @@ public class CurrencyService {
         }
         JSONObject object = new JSONObject(result.toString());
 
-        model.setCur_ID(object.getInt("Cur_ID"));
+        model.setCurId(object.getInt("Cur_ID"));
         model.setDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(object.getString("Date")));
-        model.setCur_Abbreviation(object.getString("Cur_Abbreviation"));
-        model.setCur_Scale(object.getInt("Cur_Scale"));
-        model.setCur_Name(object.getString("Cur_Name"));
-        model.setCur_OfficialRate(object.getDouble("Cur_OfficialRate"));
+        model.setCurAbbreviation(object.getString("Cur_Abbreviation"));
+        model.setCurScale(object.getInt("Cur_Scale"));
+        model.setCurName(object.getString("Cur_Name"));
+        model.setCurOfficialRate(object.getDouble("Cur_OfficialRate"));
 
 
-        return "Official rate of BYN to " + model.getCur_Abbreviation() + "\n" +
+        return "Official rate of BYN to " + model.getCurAbbreviation() + "\n" +
                 "on the date: " + getFormatDate(model) + "\n" +
-                "is: " + model.getCur_OfficialRate() + " BYN per " + model.getCur_Scale() + " " + model.getCur_Abbreviation();
+                "is: " + model.getCurOfficialRate() + " BYN per " + model.getCurScale() + " " + model.getCurAbbreviation();
 
     }
 
