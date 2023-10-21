@@ -1,31 +1,38 @@
 package com.real_estate.eqlt;
 
 import com.real_estate.eqlt.config.BotConfig;
-import com.real_estate.eqlt.repos.RealEstateRepo;
-import com.real_estate.eqlt.service.ChatService;
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
+    private final List<BotCommand> commands;
 
-    @Autowired
-    private RealEstateRepo realEstateRepo;
+    public TelegramBot(BotConfig botConfig) {
+        this.botConfig = botConfig;
+        this.commands = initCommands();
+    }
 
     @Override
     public String getBotUsername() {
@@ -45,19 +52,20 @@ public class TelegramBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             if ("/start".equals(messageText)) {
                 startCommand(chatId, update.getMessage().getChat().getFirstName());
+                sendRealEstateCommand(chatId);
             } else if ("/end".equals(messageText)) {
                 endCommand(chatId, update.getMessage().getChat().getFirstName());
             }
-            sendRealEstateCommand(chatId);
         } else if (update.hasCallbackQuery()) {
             CallbackQuery query = update.getCallbackQuery();
             String callBackData = query.getData();
             long chatId = query.getMessage().getChatId();
             switch (callBackData) {
-                case "Подобрать недвижимость", "Связаться с администратором" -> {
+                case "Подобрать недвижимость" -> {
                     sendRealEstateType(chatId);
                     System.out.println(callBackData);
                 }
+                case "Связаться с администратором" -> sendMessage(chatId, "Напиши https://web.telegram.org/k/#@psldvch");
             }
             switch (callBackData) {
                 case "Аппартаменты", "Пентхаус", "Таунхаус", "Вилла", "Земельный участок" -> {
@@ -104,6 +112,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void sendRealEstateWayToPay(Long chatId) throws TelegramApiException {
         SendMessage message = new SendMessage();
+        SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/R.b53fc6ea7b7c44e7cc7d335ca3afb7b7?rik=gSORfrcK6YnN0g&pid=ImgRaw&r=0");
         message.setChatId(String.valueOf(chatId));
         message.setText("Как рассчитываться собираешься?");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -123,6 +132,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         inlineKeyboardMarkup.setKeyboard(buttons);
         message.setReplyMarkup(inlineKeyboardMarkup);
         try {
+            execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
             throw new TelegramApiException("Cannot send message");
@@ -131,6 +141,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void sendRealEstateReadiness(Long chatId) throws TelegramApiException {
         SendMessage message = new SendMessage();
+        SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/OIP.rGbzi6L-AkPLV2Umfqv2fQHaGX?pid=ImgDet&rs=1");
         message.setChatId(String.valueOf(chatId));
         message.setText("Тип готовности недвижимости");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -156,6 +167,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         inlineKeyboardMarkup.setKeyboard(buttons);
         message.setReplyMarkup(inlineKeyboardMarkup);
         try {
+            execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
             throw new TelegramApiException("Cannot send message");
@@ -166,6 +178,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText("Давай выбирать");
+        SendPhoto photo = addPictureToMessage(chatId, "https://cdn.pixabay.com/photo/2019/04/15/14/22/choice-4129455_1280.jpg");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> button1 = new ArrayList<>();
@@ -176,6 +189,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         selectRealEstateButton2.setText("Связаться с администратором");
         selectRealEstateButton1.setCallbackData("Подобрать недвижимость");
         selectRealEstateButton2.setCallbackData("Связаться с администратором");
+        selectRealEstateButton2.setUrl("https://web.telegram.org/k/#@psldvch");
         button1.add(selectRealEstateButton1);
         button2.add(selectRealEstateButton2);
         buttons.add(button1);
@@ -183,6 +197,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         inlineKeyboardMarkup.setKeyboard(buttons);
         message.setReplyMarkup(inlineKeyboardMarkup);
         try {
+            execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
             throw new TelegramApiException("Cannot send message");
@@ -191,6 +206,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void sendRealEstateRegionChoice(Long chatId) throws TelegramApiException {
         SendMessage message = new SendMessage();
+        SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/OIP.1qfWWExYU6DQIfKVdS5KiwHaFj?pid=ImgDet&rs=1");
         message.setChatId(String.valueOf(chatId));
         message.setText("Где бы недвижимость хотел?");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -216,6 +232,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         inlineKeyboardMarkup.setKeyboard(buttons);
         message.setReplyMarkup(inlineKeyboardMarkup);
         try {
+            execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
             throw new TelegramApiException("Cannot send message");
@@ -224,6 +241,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void sendRealEstateType(Long chatId) throws TelegramApiException {
         SendMessage message = new SendMessage();
+        SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/OIP.83GCSDpACGl4_xw4QJVsHQHaEa?pid=ImgDet&rs=1");
         message.setChatId(String.valueOf(chatId));
         message.setText("Что будем брать ?");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -261,6 +279,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         inlineKeyboardMarkup.setKeyboard(buttons);
         message.setReplyMarkup(inlineKeyboardMarkup);
         try {
+            execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
             throw new TelegramApiException("Cannot send message");
@@ -268,6 +287,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void sendPriceCommand(Long chatId) throws TelegramApiException {
+        String photoUrl = "https://www.meme-arsenal.com/memes/b4b2c9cb09b2c8310ba73625e3f2b600.jpg";
+        SendPhoto photo = addPictureToMessage(chatId, photoUrl);
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText("По какой цене будем брать?");
@@ -306,6 +327,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         inlineKeyboardMarkup.setKeyboard(buttons);
         message.setReplyMarkup(inlineKeyboardMarkup);
         try {
+            execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
             throw new TelegramApiException("Cannot send message");
@@ -321,5 +343,34 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             throw new TelegramApiException("Cannot send message");
         }
+    }
+
+    @SneakyThrows
+    private List<BotCommand> initCommands() {
+        List<BotCommand> commands = new ArrayList<>();
+        commands.add(new BotCommand("/start", "start the bot"));
+        commands.add(new BotCommand("/end", "end the bot"));
+        try {
+            this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
+        } catch (TelegramApiException e) {
+            throw new TelegramApiException("Cannot send message");
+        }
+        return commands;
+    }
+
+    @SneakyThrows
+    private SendPhoto addPictureToMessage(Long chatId, String url){
+        URL imageUrl = null;
+        try {
+            imageUrl = new URL(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        InputStream imageStream = null;
+        if (imageUrl != null) {
+            imageStream = imageUrl.openStream();
+        }
+        InputFile inputFile = new InputFile(imageStream, "photo.jpg");
+        return new SendPhoto(chatId.toString(), inputFile);
     }
 }
