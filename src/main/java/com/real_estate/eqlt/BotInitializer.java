@@ -1,5 +1,6 @@
 package com.real_estate.eqlt;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -9,6 +10,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Component
+@Slf4j
 public class BotInitializer {
     private final TelegramBot telegramBot;
 
@@ -23,7 +25,7 @@ public class BotInitializer {
         try {
             telegramBotsApi.registerBot(telegramBot);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Error occurred {}", e.getMessage());
         }
     }
 }

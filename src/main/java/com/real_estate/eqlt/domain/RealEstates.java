@@ -20,16 +20,15 @@ public class RealEstates {
     @Column(name = "price", updatable = false, nullable = false)
     private String price;
 
-    @Column(name = "place", updatable = false)
-    private String place;
+    @Column(name = "region", updatable = false)
+    private String region;
+
+    @Column(name = "type", updatable = false)
+    private String type;
 
     @Column(name = "description", updatable = false)
     private String description;
 
-    @Column(name = "rooms", updatable = false)
-    private String rooms;
-
-    @Column(name = "square", updatable = false)
-    private String square;
-
+    @Column(name = "readiness", updatable = false)
+    private String readiness;
 }

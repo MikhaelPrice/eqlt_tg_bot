@@ -1,16 +1,18 @@
 package com.real_estate.eqlt;
 
 import com.real_estate.eqlt.config.BotConfig;
+import com.real_estate.eqlt.domain.EqtUsers;
+import com.real_estate.eqlt.repos.EqtUserRepo;
+import com.real_estate.eqlt.utils.TimeUtils;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -24,10 +26,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
     private final List<BotCommand> commands;
+
+    @Autowired
+    private EqtUserRepo eqtUserRepo;
 
     public TelegramBot(BotConfig botConfig) {
         this.botConfig = botConfig;
@@ -50,96 +56,69 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            if ("/start".equals(messageText)) {
-                startCommand(chatId, update.getMessage().getChat().getFirstName());
-                sendRealEstateCommand(chatId);
-            } else if ("/end".equals(messageText)) {
-                endCommand(chatId, update.getMessage().getChat().getFirstName());
+            switch (messageText) {
+                case "/start" -> {
+                    startCommand(chatId, update.getMessage().getChat().getFirstName());
+                    registerUser(update.getMessage());
+                    sendRealEstateCommand(chatId);
+                }
+                case "/end" -> endCommand(chatId, update.getMessage().getChat().getFirstName());
             }
         } else if (update.hasCallbackQuery()) {
             CallbackQuery query = update.getCallbackQuery();
             String callBackData = query.getData();
             long chatId = query.getMessage().getChatId();
+            EqtUsers user = new EqtUsers();
+            if (eqtUserRepo.findById(chatId).isPresent()) {
+                user = eqtUserRepo.findById(chatId).get();
+            } else {
+                user.setId(chatId);
+            }
             switch (callBackData) {
-                case "Подобрать недвижимость" -> {
-                    sendRealEstateType(chatId);
-                    System.out.println(callBackData);
-                }
+                case "Подобрать недвижимость" -> sendRealEstateType(chatId);
                 case "Связаться с администратором" -> sendMessage(chatId, "Напиши https://web.telegram.org/k/#@psldvch");
             }
             switch (callBackData) {
                 case "Аппартаменты", "Пентхаус", "Таунхаус", "Вилла", "Земельный участок" -> {
                     sendRealEstateRegionChoice(chatId);
-                    System.out.println(callBackData);
+                    user.setType(callBackData);
+                    eqtUserRepo.save(user);
                 }
             }
             switch (callBackData) {
                 case "Интерка", "Минск-Мир", "Каменка" -> {
                     sendPriceCommand(chatId);
-                    System.out.println(callBackData);
+                    user.setRegion(callBackData);
+                    eqtUserRepo.save(user);
                 }
             }
             switch (callBackData) {
                 case "40 гривен", "50 баксов", "100 рублей", "5 Никит", "0,00002 евра" -> {
                     sendRealEstateReadiness(chatId);
-                    System.out.println(callBackData);
+                    user.setPrice(callBackData);
+                    eqtUserRepo.save(user);
                 }
             }
             switch (callBackData) {
                 case "Готовая", "На этапе строительства", "Неважно" -> {
-                    sendRealEstateWayToPay(chatId);
-                    System.out.println(callBackData);
-                }
-            }
-            switch (callBackData) {
-                case "Сразу", "В рассрочку" -> {
-                    System.out.println(callBackData);
+                    user.setReadiness(callBackData);
+                    eqtUserRepo.save(user);
                 }
             }
         }
-
     }
 
-    private void startCommand(Long chatId, String username) throws TelegramApiException {
+    private void startCommand(Long chatId, String username) {
         String answer = "Hi, " + username + ", nice to meet you!" + "\n";
         sendMessage(chatId, answer);
     }
 
-    private void endCommand(Long chatId, String username) throws TelegramApiException {
+    private void endCommand(Long chatId, String username) {
         String answer = "Goodbye, " + username + ", thank you for using our bot!";
         sendMessage(chatId, answer);
     }
 
-    private void sendRealEstateWayToPay(Long chatId) throws TelegramApiException {
-        SendMessage message = new SendMessage();
-        SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/R.b53fc6ea7b7c44e7cc7d335ca3afb7b7?rik=gSORfrcK6YnN0g&pid=ImgRaw&r=0");
-        message.setChatId(String.valueOf(chatId));
-        message.setText("Как рассчитываться собираешься?");
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<InlineKeyboardButton> button1 = new ArrayList<>();
-        List<InlineKeyboardButton> button2 = new ArrayList<>();
-        InlineKeyboardButton selectRealEstateWayToPay1 = new InlineKeyboardButton();
-        InlineKeyboardButton selectRealEstateWayToPay2 = new InlineKeyboardButton();
-        selectRealEstateWayToPay1.setText("Сразу");
-        selectRealEstateWayToPay1.setCallbackData("Сразу");
-        selectRealEstateWayToPay2.setText("В рассрочку");
-        selectRealEstateWayToPay2.setCallbackData("В рассрочку");
-        button1.add(selectRealEstateWayToPay1);
-        button2.add(selectRealEstateWayToPay2);
-        buttons.add(button1);
-        buttons.add(button2);
-        inlineKeyboardMarkup.setKeyboard(buttons);
-        message.setReplyMarkup(inlineKeyboardMarkup);
-        try {
-            execute(photo);
-            execute(message);
-        } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
-        }
-    }
-
-    private void sendRealEstateReadiness(Long chatId) throws TelegramApiException {
+    private void sendRealEstateReadiness(Long chatId) {
         SendMessage message = new SendMessage();
         SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/OIP.rGbzi6L-AkPLV2Umfqv2fQHaGX?pid=ImgDet&rs=1");
         message.setChatId(String.valueOf(chatId));
@@ -170,11 +149,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
+            log.error("Error occurred {}", e.getMessage());
         }
     }
 
-    private void sendRealEstateCommand(Long chatId) throws TelegramApiException {
+    private void sendRealEstateCommand(Long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText("Давай выбирать");
@@ -200,11 +179,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
+            log.error("Error occurred {}", e.getMessage());
         }
     }
 
-    private void sendRealEstateRegionChoice(Long chatId) throws TelegramApiException {
+    private void sendRealEstateRegionChoice(Long chatId) {
         SendMessage message = new SendMessage();
         SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/OIP.1qfWWExYU6DQIfKVdS5KiwHaFj?pid=ImgDet&rs=1");
         message.setChatId(String.valueOf(chatId));
@@ -235,11 +214,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
+            log.error("Error occurred {}", e.getMessage());
         }
     }
 
-    private void sendRealEstateType(Long chatId) throws TelegramApiException {
+    private void sendRealEstateType(Long chatId) {
         SendMessage message = new SendMessage();
         SendPhoto photo = addPictureToMessage(chatId, "https://th.bing.com/th/id/OIP.83GCSDpACGl4_xw4QJVsHQHaEa?pid=ImgDet&rs=1");
         message.setChatId(String.valueOf(chatId));
@@ -282,11 +261,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
+            log.error("Error occurred {}", e.getMessage());
         }
     }
 
-    private void sendPriceCommand(Long chatId) throws TelegramApiException {
+    private void sendPriceCommand(Long chatId) {
         String photoUrl = "https://www.meme-arsenal.com/memes/b4b2c9cb09b2c8310ba73625e3f2b600.jpg";
         SendPhoto photo = addPictureToMessage(chatId, photoUrl);
         SendMessage message = new SendMessage();
@@ -330,18 +309,18 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(photo);
             execute(message);
         } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
+            log.error("Error occurred {}", e.getMessage());
         }
     }
 
-    private void sendMessage(Long chatId, String textToSend) throws TelegramApiException {
+    private void sendMessage(Long chatId, String textToSend) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(chatId));
         sendMessage.setText(textToSend);
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
+            log.error("Error occurred {}", e.getMessage());
         }
     }
 
@@ -353,18 +332,18 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
-            throw new TelegramApiException("Cannot send message");
+            log.error("Error occurred {}", e.getMessage());
         }
         return commands;
     }
 
     @SneakyThrows
-    private SendPhoto addPictureToMessage(Long chatId, String url){
+    private SendPhoto addPictureToMessage(Long chatId, String url) {
         URL imageUrl = null;
         try {
             imageUrl = new URL(url);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            log.error("Error occurred {}", e.getMessage());
         }
         InputStream imageStream = null;
         if (imageUrl != null) {
@@ -373,4 +352,17 @@ public class TelegramBot extends TelegramLongPollingBot {
         InputFile inputFile = new InputFile(imageStream, "photo.jpg");
         return new SendPhoto(chatId.toString(), inputFile);
     }
+
+    private void registerUser(Message msg) {
+        if (eqtUserRepo.findById(msg.getChatId()).isEmpty()) {
+            long chatId = msg.getChatId();
+            Chat chat = msg.getChat();
+            EqtUsers user = new EqtUsers();
+            user.setId(chatId);
+            user.setUsername(chat.getUserName());
+            user.setRegisteredAt(TimeUtils.userRegisterDate());
+            eqtUserRepo.save(user);
+        }
+    }
+
 }
