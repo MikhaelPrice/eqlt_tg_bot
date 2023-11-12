@@ -13,7 +13,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class EqtUsers {
+public class EqtUsersChoices {
     @Id
     @Column(name = "id", nullable = false)
     private Long id;
@@ -24,14 +24,11 @@ public class EqtUsers {
     @Column(name = "price")
     private String price;
 
-    @Column(name = "region")
-    private String region;
-
     @Column(name = "type")
     private String type;
 
-    @Column(name = "readiness")
-    private String readiness;
+    @Column(name = "willingness")
+    private String willingness;
 
     @Column(name = "registeredAt", updatable = false, nullable = false)
     private String registeredAt;

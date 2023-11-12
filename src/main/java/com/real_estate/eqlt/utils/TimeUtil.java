@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class TimeUtils {
+public class TimeUtil {
 
     private static final String USER_REGISTER_TIME_PATTERN = "dd-MM-yyyy HH:mm:ss";
 
