@@ -1,11 +1,11 @@
 package com.realestate;
 
 import com.realestate.config.BotConfig;
-import com.realestate.domain.EqtRealEstates;
-import com.realestate.domain.EqtUsersChoices;
+import com.realestate.entity.EqtRealEstates;
+import com.realestate.entity.EqtUsersChoices;
 import com.realestate.repos.EqtRealEstatesRepo;
 import com.realestate.repos.EqtUsersChoicesRepo;
-import com.realestate.service.RealEstateService;
+import com.realestate.service.realestate.RealEstateService;
 import com.realestate.utils.MessagesUtil;
 import com.realestate.utils.PriceUtil;
 import com.realestate.utils.TimeUtil;
@@ -45,7 +45,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public static final String ADMIN_TG_LINK = "https://xn--80affa3aj0al.xn--80asehdb/#@psldvch";
 
-    private final RealEstateService service;
+    private final RealEstateService realEstateService;
 
     @Autowired
     private EqtUsersChoicesRepo eqtUsersChoicesRepo;
@@ -56,7 +56,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public TelegramBot(BotConfig botConfig) {
         this.botConfig = botConfig;
         this.commands = initCommands();
-        this.service = new RealEstateService();
+        this.realEstateService = new RealEstateService();
     }
 
     @Override
@@ -121,7 +121,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     eqtUsersChoices.setWillingness(callBackData);
                     eqtUsersChoicesRepo.save(eqtUsersChoices);
                     sendMessage(chatId, PRE_RESULT_MESSAGE);
-                    List<String> prices = PriceUtil.getPricesRange(eqtUsersChoices.getPrice());
+                    List<String> prices = PriceUtil.getPriceRange(eqtUsersChoices.getPrice());
                     List<Long> realEstatesIds = eqtRealEstatesRepo.findRealEstatesIds(
                             eqtUsersChoices.getType(),
                             eqtUsersChoices.getWillingness(), prices.get(0), prices.get(1));
@@ -139,8 +139,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
             }
             switch (callBackData) {
-                case SHOW_MORE_REAL_ESTATES -> {
-                    List<String> prices = PriceUtil.getPricesRange(eqtUsersChoices.getPrice());
+                case NEXT -> {
+                    List<String> prices = PriceUtil.getPriceRange(eqtUsersChoices.getPrice());
                     List<Long> realEstatesIds = eqtRealEstatesRepo.findRealEstatesIds(
                             eqtUsersChoices.getType(),
                             eqtUsersChoices.getWillingness(), prices.get(0), prices.get(1));
@@ -172,8 +172,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         InlineKeyboardButton button3 = new InlineKeyboardButton();
-        button1.setText(SHOW_MORE_REAL_ESTATES);
-        button1.setCallbackData(SHOW_MORE_REAL_ESTATES);
+        button1.setText(NEXT);
+        button1.setCallbackData(NEXT);
         button2.setText(CONTACT_FOR_MANAGER);
         button2.setCallbackData(CONTACT_FOR_MANAGER);
         button3.setText(VISIT_COMPANY_WEBSITE);
@@ -216,11 +216,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                                       String price, Long chatId) {
         List<InputMedia> photos = new ArrayList<>();
         InputMediaPhoto photo1 = new InputMediaPhoto();
-        photo1.setMedia(service.getPictureFromResources(picture1).getNewMediaStream(), picture1);
+        photo1.setMedia(realEstateService.getPictureFromResources(picture1).getNewMediaStream(), picture1);
         InputMediaPhoto photo2 = new InputMediaPhoto();
-        photo2.setMedia(service.getPictureFromResources(picture2).getNewMediaStream(), picture2);
+        photo2.setMedia(realEstateService.getPictureFromResources(picture2).getNewMediaStream(), picture2);
         InputMediaPhoto photo3 = new InputMediaPhoto();
-        photo3.setMedia(service.getPictureFromResources(picture3).getNewMediaStream(), picture3);
+        photo3.setMedia(realEstateService.getPictureFromResources(picture3).getNewMediaStream(), picture3);
         photos.add(photo1);
         photos.add(photo2);
         photos.add(photo3);
@@ -250,7 +250,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void sendRealEstateWillingnessCommand(Long chatId) {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
-        photo.setPhoto(service.getPictureFromResources("type_of_willingness.jpeg"));
+        photo.setPhoto(realEstateService.getPictureFromResources("type_of_willingness.jpeg"));
         photo.setCaption("Willingness of real estate");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
@@ -279,7 +279,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendPhoto photo = new SendPhoto();
         photo.setCaption("How can I help you?");
         photo.setChatId(chatId);
-        photo.setPhoto(service.getPictureFromResources("greeting.jpeg"));
+        photo.setPhoto(realEstateService.getPictureFromResources("greeting.jpeg"));
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> buttons1 = new ArrayList<>();
@@ -313,7 +313,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void sendRealEstateTypeCommand(Long chatId) {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
-        photo.setPhoto(service.getPictureFromResources("type_of_object.jpeg"));
+        photo.setPhoto(realEstateService.getPictureFromResources("type_of_object.jpeg"));
         photo.setCaption("What type of real estate are you interested in ?");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
@@ -365,7 +365,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void sendRealEstatePriceCommand(Long chatId) {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
-        photo.setPhoto(service.getPictureFromResources("price_range.jpeg"));
+        photo.setPhoto(realEstateService.getPictureFromResources("price_range.jpeg"));
         photo.setCaption("How much are you ready to pay for it?");
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();

@@ -1,8 +1,8 @@
-package com.realestate.service;
+package com.realestate.service.db;
 
 
 import com.realestate.EqtApplication;
-import com.realestate.domain.EqtRealEstates;
+import com.realestate.entity.EqtRealEstates;
 import com.realestate.repos.EqtRealEstatesRepo;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -16,23 +16,26 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-public class RealEstateService {
+public class DbTableService {
 
-    public InputFile getPictureFromResources(String pictureName) {
-        ClassLoader classLoader = EqtApplication.class.getClassLoader();
-        InputStream imageStream = classLoader.getResourceAsStream(pictureName);
-        return new InputFile(imageStream, pictureName);
-    }
-
-    public void setRealEstateWillingnessAtTable(EqtRealEstatesRepo eqtRealEstatesRepo, String oldValue, String newValue) {
+    public void setRealEstateFieldValue(EqtRealEstatesRepo eqtRealEstatesRepo,
+                                        String tableField, String value) {
         Iterable<EqtRealEstates> realEstates = eqtRealEstatesRepo.findAll();
         for (EqtRealEstates realEstate : realEstates) {
-            if (realEstate.getWillingness().contains(oldValue)) {
-                realEstate.setWillingness(newValue);
+            switch (tableField) {
+                case "description" -> realEstate.setDescription(value);
+                case "neighbourhood" -> realEstate.setNeighbourhood(value);
+                case "picture1" -> realEstate.setPicture1(value);
+                case "picture2" -> realEstate.setPicture2(value);
+                case "picture3" -> realEstate.setPicture3(value);
+                case "price" -> realEstate.setPrice(value);
+                case "project" -> realEstate.setProject(value);
+                case "size" -> realEstate.setSize(value);
+                case "type" -> realEstate.setType(value);
+                case "willingness" -> realEstate.setWillingness(value);
             }
             eqtRealEstatesRepo.save(realEstate);
         }
@@ -124,8 +127,8 @@ public class RealEstateService {
         return tableValues;
     }
 
-    public void addExcelDataToDbTable(EqtRealEstatesRepo eqtRealEstatesRepo) {
-        List<List<String>> values = getExcelRealEstateSheetData("D:/Java/Beach Front база EQT.xlsx", 71);
+    public void addExcelDataToDbTable(EqtRealEstatesRepo eqtRealEstatesRepo, String filePath) {
+        List<List<String>> values = getExcelRealEstateSheetData(filePath, 71);
         for (List<String> strings : values) {
             EqtRealEstates eqtRealEstates = new EqtRealEstates();
             eqtRealEstates.setNeighbourhood(strings.get(0));

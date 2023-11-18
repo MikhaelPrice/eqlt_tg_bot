@@ -7,6 +7,6 @@ public class MessagesUtil {
                 "Location : " + neighbourhood + "\n" +
                 "Project : " + project + "\n" +
                 "Size: " + size + "\n" +
-                "Price: " + price + " AED\n";
+                "Price: " + PriceUtil.formatPriceToCommas(price) + " AED\n";
     }
 }
