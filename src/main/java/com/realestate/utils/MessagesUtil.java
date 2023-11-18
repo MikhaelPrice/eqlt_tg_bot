@@ -1,4 +1,4 @@
-package com.real_estate.eqlt.utils;
+package com.realestate.utils;
 
 public class MessagesUtil {
 
@@ -7,6 +7,6 @@ public class MessagesUtil {
                 "Location : " + neighbourhood + "\n" +
                 "Project : " + project + "\n" +
                 "Size: " + size + "\n" +
-                "Price: " + price + "AED\n";
+                "Price: " + price + " AED\n";
     }
 }

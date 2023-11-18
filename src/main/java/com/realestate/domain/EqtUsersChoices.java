@@ -1,4 +1,4 @@
-package com.real_estate.eqlt.domain;
+package com.realestate.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,4 +32,7 @@ public class EqtUsersChoices {
 
     @Column(name = "registeredAt", updatable = false, nullable = false)
     private String registeredAt;
+
+    @Column(name = "objectsFound")
+    private String objectsFound;
 }

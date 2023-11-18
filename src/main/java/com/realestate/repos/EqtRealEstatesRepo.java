@@ -1,6 +1,6 @@
-package com.real_estate.eqlt.repos;
+package com.realestate.repos;
 
-import com.real_estate.eqlt.domain.EqtRealEstates;
+import com.realestate.domain.EqtRealEstates;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

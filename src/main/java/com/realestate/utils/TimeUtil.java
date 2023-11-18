@@ -1,4 +1,4 @@
-package com.real_estate.eqlt.utils;
+package com.realestate.utils;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;

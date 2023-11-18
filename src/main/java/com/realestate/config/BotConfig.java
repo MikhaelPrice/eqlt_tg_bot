@@ -1,4 +1,4 @@
-package com.real_estate.eqlt.config;
+package com.realestate.config;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

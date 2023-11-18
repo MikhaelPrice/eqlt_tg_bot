@@ -1,6 +1,6 @@
-package com.real_estate.eqlt.repos;
+package com.realestate.repos;
 
-import com.real_estate.eqlt.domain.EqtUsersChoices;
+import com.realestate.domain.EqtUsersChoices;
 import org.springframework.data.repository.CrudRepository;
 
 public interface EqtUsersChoicesRepo extends CrudRepository<EqtUsersChoices, Long> {

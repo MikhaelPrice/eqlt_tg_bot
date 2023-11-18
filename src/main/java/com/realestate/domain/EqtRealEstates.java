@@ -1,4 +1,4 @@
-package com.real_estate.eqlt.domain;
+package com.realestate.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
