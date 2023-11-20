@@ -1,13 +1,11 @@
 package com.realestate.service.db;
 
 
-import com.realestate.EqtApplication;
 import com.realestate.entity.EqtRealEstates;
-import com.realestate.repos.EqtRealEstatesRepo;
+import com.realestate.repo.EqtRealEstatesRepo;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -127,20 +125,20 @@ public class DbTableService {
         return tableValues;
     }
 
-    public void addExcelDataToDbTable(EqtRealEstatesRepo eqtRealEstatesRepo, String filePath) {
-        List<List<String>> values = getExcelRealEstateSheetData(filePath, 71);
-        for (List<String> strings : values) {
+    public void addExcelDataToDbTable(EqtRealEstatesRepo eqtRealEstatesRepo, String filePath, int rows) {
+        List<List<String>> values = getExcelRealEstateSheetData(filePath, rows);
+        for (List<String> cellValues : values) {
             EqtRealEstates eqtRealEstates = new EqtRealEstates();
-            eqtRealEstates.setNeighbourhood(strings.get(0));
-            eqtRealEstates.setProject(strings.get(1));
-            eqtRealEstates.setType(strings.get(2));
-            eqtRealEstates.setWillingness(strings.get(3));
-            eqtRealEstates.setPrice(strings.get(4));
-            eqtRealEstates.setSize(strings.get(5));
-            eqtRealEstates.setDescription(strings.get(6));
-            eqtRealEstates.setPicture1(strings.get(7));
-            eqtRealEstates.setPicture2(strings.get(8));
-            eqtRealEstates.setPicture3(strings.get(9));
+            eqtRealEstates.setNeighbourhood(cellValues.get(0));
+            eqtRealEstates.setProject(cellValues.get(1));
+            eqtRealEstates.setType(cellValues.get(2));
+            eqtRealEstates.setWillingness(cellValues.get(3));
+            eqtRealEstates.setPrice(cellValues.get(4));
+            eqtRealEstates.setSize(cellValues.get(5));
+            eqtRealEstates.setDescription(cellValues.get(6));
+            eqtRealEstates.setPicture1(cellValues.get(7));
+            eqtRealEstates.setPicture2(cellValues.get(8));
+            eqtRealEstates.setPicture3(cellValues.get(9));
             eqtRealEstatesRepo.save(eqtRealEstates);
         }
     }

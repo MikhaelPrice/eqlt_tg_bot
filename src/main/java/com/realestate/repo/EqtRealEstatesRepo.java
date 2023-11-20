@@ -1,4 +1,4 @@
-package com.realestate.repos;
+package com.realestate.repo;
 
 import com.realestate.entity.EqtRealEstates;
 import org.springframework.data.jpa.repository.Query;

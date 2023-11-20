@@ -1,7 +1,7 @@
 package com.realestate.utils;
 
 import com.realestate.entity.EqtRealEstates;
-import com.realestate.repos.EqtRealEstatesRepo;
+import com.realestate.repo.EqtRealEstatesRepo;
 
 import java.util.ArrayList;
 import java.util.Iterator;

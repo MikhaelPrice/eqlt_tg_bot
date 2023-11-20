@@ -3,8 +3,10 @@ package com.realestate;
 import com.realestate.config.BotConfig;
 import com.realestate.entity.EqtRealEstates;
 import com.realestate.entity.EqtUsersChoices;
-import com.realestate.repos.EqtRealEstatesRepo;
-import com.realestate.repos.EqtUsersChoicesRepo;
+import com.realestate.entity.EqtUsersErrors;
+import com.realestate.repo.EqtRealEstatesRepo;
+import com.realestate.repo.EqtUsersChoicesRepo;
+import com.realestate.repo.EqtUsersErrorsRepo;
 import com.realestate.service.realestate.RealEstateService;
 import com.realestate.utils.MessagesUtil;
 import com.realestate.utils.PriceUtil;
@@ -35,6 +37,10 @@ import java.util.List;
 
 import static com.realestate.utils.Constants.*;
 import static com.realestate.utils.Constants.Messages.*;
+import static com.realestate.utils.Constants.Prices.Apartments.*;
+import static com.realestate.utils.Constants.Prices.Duplex.*;
+import static com.realestate.utils.Constants.Prices.Penthouses.*;
+import static com.realestate.utils.Constants.Prices.Villas.*;
 
 @Component
 @Slf4j
@@ -52,6 +58,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private EqtRealEstatesRepo eqtRealEstatesRepo;
+
+    @Autowired
+    private EqtUsersErrorsRepo eqtUsersErrorsRepo;
 
     public TelegramBot(BotConfig botConfig) {
         this.botConfig = botConfig;
@@ -102,15 +111,48 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case VISIT_COMPANY_WEBSITE -> sendMessage(chatId, VISIT_COMPANY_WEBSITE);
             }
             switch (callBackData) {
-                case APARTMENTS, PENTHOUSES, TOWNHOUSES, VILLAS, DUPLEX, SIMPLEX -> {
-                    sendRealEstatePriceCommand(chatId);
+                case APARTMENTS -> {
+                    sendRealEstatePriceCommand(chatId, TWO_FOUR_MILLIONS,
+                            FOUR_SIX_MILLIONS, SIX_EIGHT_MILLIONS,
+                            TEN_THIRTY_MILLIONS);
                     eqtUsersChoices.setType(callBackData);
                     eqtUsersChoicesRepo.save(eqtUsersChoices);
                 }
             }
             switch (callBackData) {
-                case THREE_FOUR_MILLIONS, FOUR_SIX_MILLIONS,
-                        SIX_EIGHT_MILLIONS, TEN_THIRTY_MILLIONS, TEN_PLUS_MILLIONS -> {
+                case PENTHOUSES -> {
+                    sendRealEstatePriceCommand(chatId, FIFTEEN_TWENTY_FIVE_MILLIONS,
+                            TWENTY_FIVE_THIRTY_MILLIONS, THIRTY_FORTY_MILLIONS,
+                            FORTY_FIFTY_MILLIONS);
+                    eqtUsersChoices.setType(callBackData);
+                    eqtUsersChoicesRepo.save(eqtUsersChoices);
+                }
+            }
+            switch (callBackData) {
+                case DUPLEX -> {
+                    sendRealEstatePriceCommand(chatId, FORTY_FORTY_FIVE_MILLIONS,
+                            FORTY_FIVE_FORTY_SEVEN_MILLIONS, FORTY_SEVEN_SEVENTY_MILLIONS,
+                            SEVENTY_ONE_HUNDRED_TEN_MILLIONS);
+                    eqtUsersChoices.setType(callBackData);
+                    eqtUsersChoicesRepo.save(eqtUsersChoices);
+                }
+            }
+            switch (callBackData) {
+                case VILLAS -> {
+                    sendRealEstatePriceCommand(chatId, EIGHT_TEN_MILLIONS,
+                            TEN_THIRTEEN_MILLIONS, THIRTEEN_FIFTEEN_MILLIONS,
+                            FIFTEEN_ONE_HUNDRED_FORTY_MILLIONS);
+                    eqtUsersChoices.setType(callBackData);
+                    eqtUsersChoicesRepo.save(eqtUsersChoices);
+                }
+            }
+            switch (callBackData) {
+                case TWO_FOUR_MILLIONS, FOUR_SIX_MILLIONS, SIX_EIGHT_MILLIONS, TEN_THIRTY_MILLIONS,
+                        FIFTEEN_TWENTY_FIVE_MILLIONS, TWENTY_FIVE_THIRTY_MILLIONS,
+                        THIRTY_FORTY_MILLIONS, FORTY_FIFTY_MILLIONS, FORTY_FORTY_FIVE_MILLIONS,
+                        FORTY_FIVE_FORTY_SEVEN_MILLIONS, FORTY_SEVEN_SEVENTY_MILLIONS,
+                        SEVENTY_ONE_HUNDRED_TEN_MILLIONS, EIGHT_TEN_MILLIONS,
+                        TEN_THIRTEEN_MILLIONS, THIRTEEN_FIFTEEN_MILLIONS, FIFTEEN_ONE_HUNDRED_FORTY_MILLIONS -> {
                     sendRealEstateWillingnessCommand(chatId);
                     eqtUsersChoices.setPrice(callBackData);
                     eqtUsersChoicesRepo.save(eqtUsersChoices);
@@ -139,7 +181,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
             }
             switch (callBackData) {
-                case NEXT -> {
+                case NEXT_OBJECT -> {
                     List<String> prices = PriceUtil.getPriceRange(eqtUsersChoices.getPrice());
                     List<Long> realEstatesIds = eqtRealEstatesRepo.findRealEstatesIds(
                             eqtUsersChoices.getType(),
@@ -172,8 +214,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         InlineKeyboardButton button3 = new InlineKeyboardButton();
-        button1.setText(NEXT);
-        button1.setCallbackData(NEXT);
+        button1.setText(NEXT_OBJECT);
+        button1.setCallbackData(NEXT_OBJECT);
         button2.setText(CONTACT_FOR_MANAGER);
         button2.setCallbackData(CONTACT_FOR_MANAGER);
         button3.setText(VISIT_COMPANY_WEBSITE);
@@ -190,7 +232,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(chatId, e.getMessage());
         }
     }
 
@@ -199,19 +241,17 @@ public class TelegramBot extends TelegramLongPollingBot {
             EqtRealEstates realEstate = eqtRealEstatesRepo.findById(realEstateIds.get(index)).get();
             String neighbourhood = realEstate.getNeighbourhood();
             String description = realEstate.getDescription();
-            String project = realEstate.getProject();
             String size = realEstate.getSize();
             String price = realEstate.getPrice();
             String picture1 = realEstate.getPicture1();
             String picture2 = realEstate.getPicture2();
             String picture3 = realEstate.getPicture3();
             sendRealEstateObject(picture1, picture2, picture3,
-                    neighbourhood, project,
-                    description, size, price, chatId);
+                    neighbourhood, description, size, price, chatId);
         }
     }
 
-    private void sendRealEstateObject(String picture1, String picture2, String picture3, String project,
+    private void sendRealEstateObject(String picture1, String picture2, String picture3,
                                       String neighbourhood, String description, String size,
                                       String price, Long chatId) {
         List<InputMedia> photos = new ArrayList<>();
@@ -232,9 +272,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(sendMediaGroup);
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(chatId, e.getMessage());
         }
-        sendMessage(chatId, MessagesUtil.resultMessageBuilder(description, project, neighbourhood, size, price));
+        sendMessage(chatId, MessagesUtil.resultMessageBuilder(description, neighbourhood, size, price));
     }
 
     private void sendStartCommand(Long chatId, String username) {
@@ -271,7 +311,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(photo);
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(chatId, e.getMessage());
         }
     }
 
@@ -306,7 +346,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(photo);
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(chatId, e.getMessage());
         }
     }
 
@@ -321,48 +361,37 @@ public class TelegramBot extends TelegramLongPollingBot {
         List<InlineKeyboardButton> buttons2 = new ArrayList<>();
         List<InlineKeyboardButton> buttons3 = new ArrayList<>();
         List<InlineKeyboardButton> buttons4 = new ArrayList<>();
-        List<InlineKeyboardButton> buttons5 = new ArrayList<>();
-        List<InlineKeyboardButton> buttons6 = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         InlineKeyboardButton button3 = new InlineKeyboardButton();
         InlineKeyboardButton button4 = new InlineKeyboardButton();
-        InlineKeyboardButton button5 = new InlineKeyboardButton();
-        InlineKeyboardButton button6 = new InlineKeyboardButton();
         button1.setText(APARTMENTS);
         button2.setText(PENTHOUSES);
-        button3.setText(TOWNHOUSES);
-        button4.setText(VILLAS);
-        button5.setText(DUPLEX);
-        button6.setText(SIMPLEX);
+        button3.setText(VILLAS);
+        button4.setText(DUPLEX);
         button1.setCallbackData(APARTMENTS);
         button2.setCallbackData(PENTHOUSES);
-        button3.setCallbackData(TOWNHOUSES);
-        button4.setCallbackData(VILLAS);
-        button5.setCallbackData(DUPLEX);
-        button6.setCallbackData(SIMPLEX);
+        button3.setCallbackData(VILLAS);
+        button4.setCallbackData(DUPLEX);
         buttons1.add(button1);
         buttons2.add(button2);
         buttons3.add(button3);
         buttons4.add(button4);
-        buttons5.add(button5);
-        buttons6.add(button6);
         buttons.add(buttons1);
         buttons.add(buttons2);
         buttons.add(buttons3);
         buttons.add(buttons4);
-        buttons.add(buttons5);
-        buttons.add(buttons6);
         inlineKeyboardMarkup.setKeyboard(buttons);
         photo.setReplyMarkup(inlineKeyboardMarkup);
         try {
             execute(photo);
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(chatId, e.getMessage());
         }
     }
 
-    private void sendRealEstatePriceCommand(Long chatId) {
+    private void sendRealEstatePriceCommand(Long chatId, String price1,
+                                            String price2, String price3, String price4) {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(realEstateService.getPictureFromResources("price_range.jpeg"));
@@ -373,38 +402,32 @@ public class TelegramBot extends TelegramLongPollingBot {
         List<InlineKeyboardButton> buttons2 = new ArrayList<>();
         List<InlineKeyboardButton> buttons3 = new ArrayList<>();
         List<InlineKeyboardButton> buttons4 = new ArrayList<>();
-        List<InlineKeyboardButton> buttons5 = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         InlineKeyboardButton button3 = new InlineKeyboardButton();
         InlineKeyboardButton button4 = new InlineKeyboardButton();
-        InlineKeyboardButton button5 = new InlineKeyboardButton();
-        button1.setText(THREE_FOUR_MILLIONS);
-        button2.setText(FOUR_SIX_MILLIONS);
-        button3.setText(SIX_EIGHT_MILLIONS);
-        button4.setText(TEN_THIRTY_MILLIONS);
-        button5.setText(TEN_PLUS_MILLIONS);
-        button1.setCallbackData(THREE_FOUR_MILLIONS);
-        button2.setCallbackData(FOUR_SIX_MILLIONS);
-        button3.setCallbackData(SIX_EIGHT_MILLIONS);
-        button4.setCallbackData(TEN_THIRTY_MILLIONS);
-        button5.setCallbackData(TEN_PLUS_MILLIONS);
+        button1.setText(price1);
+        button2.setText(price2);
+        button3.setText(price3);
+        button4.setText(price4);
+        button1.setCallbackData(price1);
+        button2.setCallbackData(price2);
+        button3.setCallbackData(price3);
+        button4.setCallbackData(price4);
         buttons1.add(button1);
         buttons2.add(button2);
         buttons3.add(button3);
         buttons4.add(button4);
-        buttons5.add(button5);
         buttons.add(buttons1);
         buttons.add(buttons2);
         buttons.add(buttons3);
         buttons.add(buttons4);
-        buttons.add(buttons5);
         inlineKeyboardMarkup.setKeyboard(buttons);
         photo.setReplyMarkup(inlineKeyboardMarkup);
         try {
             execute(photo);
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(chatId, e.getMessage());
         }
     }
 
@@ -415,7 +438,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(chatId, e.getMessage());
         }
     }
 
@@ -429,7 +452,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
-            log.error("Error occurred {}", e.getMessage());
+            registerException(this.getMe().getId(), e.getMessage());
         }
         return commands;
     }
@@ -441,10 +464,18 @@ public class TelegramBot extends TelegramLongPollingBot {
             EqtUsersChoices user = new EqtUsersChoices();
             user.setId(chatId);
             user.setUsername(chat.getUserName());
-            user.setRegisteredAt(TimeUtil.userRegisterDate());
+            user.setRegisteredAt(TimeUtil.currentTime());
             user.setObjectsFound("0");
             eqtUsersChoicesRepo.save(user);
         }
+    }
+
+    private void registerException(Long chatId, String content) {
+        EqtUsersErrors errors = new EqtUsersErrors();
+        errors.setId(chatId);
+        errors.setTimeCreated(TimeUtil.currentTime());
+        errors.setErrorContent(content);
+        eqtUsersErrorsRepo.save(errors);
     }
 
 }

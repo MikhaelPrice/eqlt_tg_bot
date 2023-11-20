@@ -9,7 +9,7 @@ public class TimeUtil {
 
     private static final String USER_REGISTER_TIME_PATTERN = "dd-MM-yyyy HH:mm:ss";
 
-    public static String userRegisterDate() {
+    public static String currentTime() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(new Timestamp(System.currentTimeMillis()).getTime());
         SimpleDateFormat format = new SimpleDateFormat(USER_REGISTER_TIME_PATTERN);
