@@ -18,7 +18,7 @@ public class EqtUsersChoices {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "username", nullable = false)
+    @Column(name = "username")
     private String username;
 
     @Column(name = "price")
@@ -30,7 +30,7 @@ public class EqtUsersChoices {
     @Column(name = "willingness")
     private String willingness;
 
-    @Column(name = "registeredAt", updatable = false, nullable = false)
+    @Column(name = "registeredAt")
     private String registeredAt;
 
     @Column(name = "objectsFound")
