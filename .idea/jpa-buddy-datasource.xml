@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JpbDataSourceConfig">
+    <data-sources>
+      <data-source id="3b9a479c-ba33-4308-be07-cca93f4bcb9e" name="eqt" url="jdbc:postgresql://127.0.0.1:5432/eqt?useUnicode=true&amp;characterEncoding=UTF-8" driverClass="org.postgresql.Driver" />
+    </data-sources>
+  </component>
+</project>
