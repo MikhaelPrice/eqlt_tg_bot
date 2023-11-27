@@ -18,7 +18,7 @@ public class Constants {
         public static final String MORE_OBJECTS_ACCORDING_TO_YOUR_REQUEST = "More objects according to your request";
         public static final String PRE_RESULT_MESSAGE = "One second... \nSearching for appropriate objects.";
         public static final String AFTER_RESULT_MESSAGE = "That is all off objects founded according to your request.\nIf you desire to continue, choose one of the option in bot menu";
-        public static final String OBJECTS_NOT_FOUND = "There isn't any real estate according to your request. You can watch all the object catalog on our company website by choosing command \"site\" in bot menu";
+        public static final String OBJECTS_NOT_FOUND = "There isn't any real estate according to your request. You can watch all the object catalog on our company website by choosing command \"\site\" in bot menu";
     }
 
     public static class Prices {

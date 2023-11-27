@@ -29,7 +29,7 @@ public class DbTableService {
                 case "picture1" -> realEstate.setPicture1(value);
                 case "picture2" -> realEstate.setPicture2(value);
                 case "picture3" -> realEstate.setPicture3(value);
-                case "price" -> realEstate.setPrice(value);
+                case "price" -> realEstate.setPrice(Integer.valueOf(value));
                 case "project" -> realEstate.setProject(value);
                 case "size" -> realEstate.setSize(value);
                 case "type" -> realEstate.setType(value);
@@ -133,7 +133,7 @@ public class DbTableService {
             eqtRealEstates.setProject(cellValues.get(1));
             eqtRealEstates.setType(cellValues.get(2));
             eqtRealEstates.setWillingness(cellValues.get(3));
-            eqtRealEstates.setPrice(cellValues.get(4));
+            eqtRealEstates.setPrice(Integer.valueOf(cellValues.get(4)));
             eqtRealEstates.setSize(cellValues.get(5));
             eqtRealEstates.setDescription(cellValues.get(6));
             eqtRealEstates.setPicture1(cellValues.get(7));

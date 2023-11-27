@@ -49,7 +49,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final BotConfig botConfig;
     private final List<BotCommand> commands;
 
-    public static final String ADMIN_TG_LINK = "https://xn--80affa3aj0al.xn--80asehdb/#@psldvch";
+    public static final String ADMIN_TG_LINK = "https://xn--80affa3aj0al.xn--80asehdb/#@katya_eqt";
 
     private final RealEstateService realEstateService;
 
@@ -164,9 +164,15 @@ public class TelegramBot extends TelegramLongPollingBot {
                     eqtUsersChoicesRepo.save(eqtUsersChoices);
                     sendMessage(chatId, PRE_RESULT_MESSAGE);
                     List<String> prices = PriceUtil.getPriceRange(eqtUsersChoices.getPrice());
+                    for (String price : prices) {
+                        System.out.println(price);
+                    }
                     List<Long> realEstatesIds = eqtRealEstatesRepo.findRealEstatesIds(
                             eqtUsersChoices.getType(),
                             eqtUsersChoices.getWillingness(), prices.get(0), prices.get(1));
+                    for (Long realEstatesId : realEstatesIds) {
+                        System.out.println(realEstatesId);
+                    }
                     eqtUsersChoices.setObjectsFound(String.valueOf(realEstatesIds.size() - 1));
                     eqtUsersChoicesRepo.save(eqtUsersChoices);
                     int objectsFound = Integer.parseInt(eqtUsersChoices.getObjectsFound());
@@ -242,7 +248,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             String neighbourhood = realEstate.getNeighbourhood();
             String description = realEstate.getDescription();
             String size = realEstate.getSize();
-            String price = realEstate.getPrice();
+            String price = realEstate.getPrice().toString();
+            System.out.println(price);
             String picture1 = realEstate.getPicture1();
             String picture2 = realEstate.getPicture2();
             String picture3 = realEstate.getPicture3();
@@ -461,9 +468,15 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (eqtUsersChoicesRepo.findById(msg.getChatId()).isEmpty()) {
             long chatId = msg.getChatId();
             Chat chat = msg.getChat();
+            String registerName;
+            if (chat.getUserName() == null) {
+                registerName = "unidentified";
+            } else {
+                registerName = chat.getUserName();
+            }
             EqtUsersChoices user = new EqtUsersChoices();
             user.setId(chatId);
-            user.setUsername(chat.getUserName());
+            user.setUsername(registerName);
             user.setRegisteredAt(TimeUtil.currentTime());
             user.setObjectsFound("0");
             eqtUsersChoicesRepo.save(user);

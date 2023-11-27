@@ -30,7 +30,7 @@ public class EqtRealEstates {
     private String willingness;
 
     @Column(name = "price")
-    private String price;
+    private Integer price;
 
     @Column(name = "size")
     private String size;

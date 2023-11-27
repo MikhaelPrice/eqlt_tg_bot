@@ -2,6 +2,7 @@ package com.realestate.utils;
 
 import com.realestate.entity.EqtRealEstates;
 import com.realestate.repo.EqtRealEstatesRepo;
+import com.realestate.service.db.DbTableService;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +35,7 @@ public class PriceUtil {
         List<Long> prices = new ArrayList<>();
         while (iterator.hasNext()) {
             EqtRealEstates realEstate = iterator.next();
-            prices.add(Long.parseLong(realEstate.getPrice()));
+            prices.add(Long.parseLong(realEstate.getPrice().toString()));
         }
         return prices.stream()
                 .filter(num -> num >= lowRange && num <= highRange)
