@@ -7,6 +7,7 @@ import com.realestate.entity.EqtUsersErrors;
 import com.realestate.repo.EqtRealEstatesRepo;
 import com.realestate.repo.EqtUsersChoicesRepo;
 import com.realestate.repo.EqtUsersErrorsRepo;
+import com.realestate.service.db.DbTableService;
 import com.realestate.service.realestate.RealEstateService;
 import com.realestate.utils.MessagesUtil;
 import com.realestate.utils.PriceUtil;
@@ -49,7 +50,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final BotConfig botConfig;
     private final List<BotCommand> commands;
 
-    public static final String ADMIN_TG_LINK = "https://xn--80affa3aj0al.xn--80asehdb/#@katya_eqt";
+    public static final String ADMIN_TG_LINK = "https://t.me/katya_eqt";
 
     private final RealEstateService realEstateService;
 
@@ -164,15 +165,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                     eqtUsersChoicesRepo.save(eqtUsersChoices);
                     sendMessage(chatId, PRE_RESULT_MESSAGE);
                     List<String> prices = PriceUtil.getPriceRange(eqtUsersChoices.getPrice());
-                    for (String price : prices) {
-                        System.out.println(price);
-                    }
                     List<Long> realEstatesIds = eqtRealEstatesRepo.findRealEstatesIds(
                             eqtUsersChoices.getType(),
                             eqtUsersChoices.getWillingness(), prices.get(0), prices.get(1));
-                    for (Long realEstatesId : realEstatesIds) {
-                        System.out.println(realEstatesId);
-                    }
                     eqtUsersChoices.setObjectsFound(String.valueOf(realEstatesIds.size() - 1));
                     eqtUsersChoicesRepo.save(eqtUsersChoices);
                     int objectsFound = Integer.parseInt(eqtUsersChoices.getObjectsFound());
@@ -224,6 +219,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         button1.setCallbackData(NEXT_OBJECT);
         button2.setText(CONTACT_FOR_MANAGER);
         button2.setCallbackData(CONTACT_FOR_MANAGER);
+        button2.setUrl(ADMIN_TG_LINK);
         button3.setText(VISIT_COMPANY_WEBSITE);
         button3.setCallbackData(VISIT_COMPANY_WEBSITE);
         button3.setUrl(COMPANY_SITE);
@@ -249,7 +245,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             String description = realEstate.getDescription();
             String size = realEstate.getSize();
             String price = realEstate.getPrice().toString();
-            System.out.println(price);
             String picture1 = realEstate.getPicture1();
             String picture2 = realEstate.getPicture2();
             String picture3 = realEstate.getPicture3();
@@ -281,8 +276,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             registerException(chatId, e.getMessage());
         }
-        sendMessage(chatId, MessagesUtil.resultMessageBuilder(description, neighbourhood, size, price));
+        MessagesUtil.sendText(chatId, getBotToken(), description, neighbourhood, size, price);
+        //sendMessage(chatId, MessagesUtil.resultMessageBuilder(chatId, getBotToken(), description, neighbourhood, size, price));
     }
+
 
     private void sendStartCommand(Long chatId, String username) {
         String answer = "Hi, " + username + ", nice to meet you!" + "\n";
@@ -339,6 +336,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         button1.setCallbackData(CHOOSE_REAL_ESTATE);
         button2.setText(CONTACT_FOR_MANAGER);
         button2.setCallbackData(CONTACT_FOR_MANAGER);
+        button2.setUrl(ADMIN_TG_LINK);
         button3.setText(VISIT_COMPANY_WEBSITE);
         button3.setCallbackData(VISIT_COMPANY_WEBSITE);
         button3.setUrl(COMPANY_SITE);

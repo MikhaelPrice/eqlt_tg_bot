@@ -19,6 +19,28 @@ import java.util.Objects;
 
 public class DbTableService {
 
+    public void updateRealEstateColumnsValues(EqtRealEstatesRepo eqtRealEstatesRepo,
+                                              String tableField, List<String> values){
+        Iterable<EqtRealEstates> realEstates = eqtRealEstatesRepo.findAll();
+        int valueIndex = 0;
+        for (EqtRealEstates realEstate : realEstates) {
+            switch (tableField) {
+                case "description" -> realEstate.setDescription(values.get(valueIndex));
+                case "neighbourhood" -> realEstate.setNeighbourhood(values.get(valueIndex));
+                case "picture1" -> realEstate.setPicture1(values.get(valueIndex));
+                case "picture2" -> realEstate.setPicture2(values.get(valueIndex));
+                case "picture3" -> realEstate.setPicture3(values.get(valueIndex));
+                case "price" -> realEstate.setPrice(Integer.valueOf(values.get(valueIndex)));
+                case "project" -> realEstate.setProject(values.get(valueIndex));
+                case "size" -> realEstate.setSize(values.get(valueIndex));
+                case "type" -> realEstate.setType(values.get(valueIndex));
+                case "willingness" -> realEstate.setWillingness(values.get(valueIndex));
+            }
+            valueIndex++;
+            eqtRealEstatesRepo.save(realEstate);
+        }
+    }
+
     public void setRealEstateFieldValue(EqtRealEstatesRepo eqtRealEstatesRepo,
                                         String tableField, String value) {
         Iterable<EqtRealEstates> realEstates = eqtRealEstatesRepo.findAll();
@@ -123,6 +145,20 @@ public class DbTableService {
             e.printStackTrace();
         }
         return tableValues;
+    }
+
+    public List<String> getExcelColumnValues(String excelFilePath, int column, int rows){
+        List<String> columnValues = new ArrayList<>();
+        try (FileInputStream fis = new FileInputStream(excelFilePath)) {
+            XSSFWorkbook wb = new XSSFWorkbook(fis);
+            XSSFSheet sheet = wb.getSheetAt(0);
+            for (int row = 1; row < rows; row++) {
+                columnValues.add(sheet.getRow(row).getCell(column).toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return columnValues;
     }
 
     public void addExcelDataToDbTable(EqtRealEstatesRepo eqtRealEstatesRepo, String filePath, int rows) {
