@@ -75,7 +75,7 @@ public class DbTableService {
                 String resourcePictureName1 = basicName.concat("1.jpeg");
                 String resourcePictureName2 = basicName.concat("2.jpeg");
                 String resourcePictureName3 = basicName.concat("3.jpeg");
-                URL url1 = null;
+                /*URL url1 = null;
                 URL url2 = null;
                 URL url3 = null;
                 try {
@@ -112,7 +112,7 @@ public class DbTableService {
                 }
                 inputStream1.close();
                 inputStream2.close();
-                inputStream3.close();
+                inputStream3.close();*/
                 realEstate.setPicture1(resourcePictureName1);
                 realEstate.setPicture2(resourcePictureName2);
                 realEstate.setPicture3(resourcePictureName3);

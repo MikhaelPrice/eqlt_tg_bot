@@ -34,7 +34,7 @@ public class Constants {
             public static final String FIFTEEN_TWENTY_FIVE_MILLIONS = "15,000,000 AED - 25,000,000 AED";
             public static final String TWENTY_FIVE_THIRTY_MILLIONS = "25,000,000 AED - 30,000,000 AED";
             public static final String THIRTY_FORTY_MILLIONS = "30,000,000 AED - 40,000,000 AED";
-            public static final String FORTY_FIFTY_MILLIONS = "40,000,000 AED - 50,000,000 AED";
+            public static final String FORTY_FIFTY_MILLIONS = "40,000,000 AED - 60,000,000 AED";
         }
 
         public static class Duplex {

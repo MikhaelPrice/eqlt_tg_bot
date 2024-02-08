@@ -93,7 +93,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
                 case "/help" -> sendMessage(chatId, ADMIN_TG_LINK);
                 case "/site" -> sendMessage(chatId, COMPANY_SITE);
-                case "/end" -> sendEndCommand(chatId, update.getMessage().getChat().getFirstName());
                 default -> sendMessage(chatId, "There isn't proceeding for such command. Ask for it manager");
             }
         } else if (update.hasCallbackQuery()) {
@@ -276,18 +275,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             registerException(chatId, e.getMessage());
         }
-        MessagesUtil.sendText(chatId, getBotToken(), description, neighbourhood, size, price);
-        //sendMessage(chatId, MessagesUtil.resultMessageBuilder(chatId, getBotToken(), description, neighbourhood, size, price));
+        sendMessage(chatId, MessagesUtil.resultMessageBuilder(description, neighbourhood, size, price));
     }
 
 
     private void sendStartCommand(Long chatId, String username) {
         String answer = "Hi, " + username + ", nice to meet you!" + "\n";
-        sendMessage(chatId, answer);
-    }
-
-    private void sendEndCommand(Long chatId, String username) {
-        String answer = "Goodbye, " + username + ", thank you for using our bot!";
         sendMessage(chatId, answer);
     }
 
@@ -451,7 +444,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     private List<BotCommand> initCommands() {
         List<BotCommand> commands = new ArrayList<>();
         commands.add(new BotCommand("/start", "start bot"));
-        commands.add(new BotCommand("/end", "end bot"));
         commands.add(new BotCommand("/help", "administrator"));
         commands.add(new BotCommand("/site", "company website"));
         try {
