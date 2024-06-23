@@ -3,15 +3,10 @@ package com.realestate.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
-@Getter
-@Setter
-@ToString
+@Data
 @RequiredArgsConstructor
 public class EqtUsersChoices {
     @Id
@@ -26,6 +21,9 @@ public class EqtUsersChoices {
 
     @Column(name = "type")
     private String type;
+
+    @Column(name = "language")
+    private String language;
 
     @Column(name = "willingness")
     private String willingness;

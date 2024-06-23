@@ -3,6 +3,7 @@ package com.realestate.service.db;
 
 import com.realestate.entity.EqtRealEstates;
 import com.realestate.repo.EqtRealEstatesRepo;
+import com.realestate.utils.Constants;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -20,7 +21,36 @@ import java.util.Objects;
 public class DbTableService {
 
     public void updateRealEstateColumnsValues(EqtRealEstatesRepo eqtRealEstatesRepo,
-                                              String tableField, List<String> values){
+                                              String tableField, List<String> values) {
+        /*Iterable<EqtRealEstates> realEstates = eqtRealEstatesRepo.findAll();
+        long id = 727;
+        System.out.println(eqtRealEstatesRepo.count());
+        for (EqtRealEstates realEstate : realEstates) {
+            id = id + 1;
+            EqtRealEstates eqtRealEstate = new EqtRealEstates();
+            eqtRealEstate.setId(id);
+            eqtRealEstate.setDescription(realEstate.getDescription());
+            eqtRealEstate.setNeighbourhood(realEstate.getNeighbourhood());
+            eqtRealEstate.setPicture1(realEstate.getPicture1());
+            eqtRealEstate.setPicture2(realEstate.getPicture2());
+            eqtRealEstate.setPicture3(realEstate.getPicture3());
+            eqtRealEstate.setPrice(realEstate.getPrice());
+            eqtRealEstate.setProject(realEstate.getProject());
+            eqtRealEstate.setSize(realEstate.getSize());
+            String type = realEstate.getType();
+            switch (type) {
+                case Constants.English.APARTMENTS -> eqtRealEstate.setType(Constants.Russian.APARTMENTS);
+                case Constants.English.DUPLEX -> eqtRealEstate.setType(Constants.Russian.DUPLEX);
+                case Constants.English.PENTHOUSES -> eqtRealEstate.setType(Constants.Russian.PENTHOUSES);
+                case Constants.English.VILLAS -> eqtRealEstate.setType(Constants.Russian.VILLAS);
+            }
+            String willingness = realEstate.getWillingness();
+            switch (willingness) {
+                case Constants.English.SECONDARY -> eqtRealEstate.setWillingness(Constants.Russian.SECONDARY);
+                case Constants.English.OFF_PLAN -> eqtRealEstate.setWillingness(Constants.Russian.OFF_PLAN);
+            }
+            eqtRealEstatesRepo.save(eqtRealEstate);
+        }*/
         Iterable<EqtRealEstates> realEstates = eqtRealEstatesRepo.findAll();
         int valueIndex = 0;
         for (EqtRealEstates realEstate : realEstates) {
@@ -147,7 +177,7 @@ public class DbTableService {
         return tableValues;
     }
 
-    public List<String> getExcelColumnValues(String excelFilePath, int column, int rows){
+    public List<String> getExcelColumnValues(String excelFilePath, int column, int rows) {
         List<String> columnValues = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(excelFilePath)) {
             XSSFWorkbook wb = new XSSFWorkbook(fis);
